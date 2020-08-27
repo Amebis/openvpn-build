@@ -1,0 +1,23 @@
+#!/bin/bash
+
+OPENVPN_BRANCH="${1:master}"
+
+rm -rf sources/* tmp/* image-win32
+
+OPENVPN_VERSION=${OPENVPN_BRANCH} \
+OPENVPN_URL=https://github.com/Amebis/openvpn/archive/${OPENVPN_BRANCH}.tar.gz \
+IMAGEROOT=`pwd`/image-win32 \
+CHOST=i686-w64-mingw32 \
+CBUILD=x86_64-pc-linux-gnu \
+./build
+
+rm -rf sources/* tmp/* image-win64
+
+OPENVPN_VERSION=${OPENVPN_BRANCH} \
+OPENVPN_URL=https://github.com/Amebis/openvpn/archive/${OPENVPN_BRANCH}.tar.gz \
+IMAGEROOT=`pwd`/image-win64 \
+CHOST=x86_64-w64-mingw32 \
+CBUILD=x86_64-pc-linux-gnu \
+./build
+
+rm -rf sources/* tmp/*
