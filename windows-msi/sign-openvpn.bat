@@ -17,4 +17,26 @@ rem RFC3161-compliant web service.
 rem
 rem Run this script before packaging.
 
-signtool.exe sign /sha1 "%ManifestCertificateThumbprint%" /fd sha256 /tr "%ManifestTimestampRFC3161Url%" /td sha256 ..\generic\image-win32\openvpn\bin\*.dll ..\generic\image-win32\openvpn\bin\*.exe ..\generic\image-win64\openvpn\bin\*.dll ..\generic\image-win64\openvpn\bin\*.exe
+signtool.exe sign ^
+    /sha1 "%ManifestCertificateThumbprint%" /fd sha256 ^
+    /tr "%ManifestTimestampRFC3161Url%" /td sha256 ^
+    ..\generic\image-win32\openvpn\bin\libcrypto-1_1.dll ^
+    ..\generic\image-win32\openvpn\bin\liblzo2-2.dll ^
+    ..\generic\image-win32\openvpn\bin\libopenvpnmsica.dll ^
+    ..\generic\image-win32\openvpn\bin\libpkcs11-helper-1.dll ^
+    ..\generic\image-win32\openvpn\bin\libssl-1_1.dll ^
+    ..\generic\image-win32\openvpn\bin\openssl.exe ^
+    ..\generic\image-win32\openvpn\bin\openvpn.exe ^
+    ..\generic\image-win32\openvpn\bin\openvpn-gui.exe ^
+    ..\generic\image-win32\openvpn\bin\openvpnserv.exe ^
+    ..\generic\image-win32\openvpn\bin\tapctl.exe ^
+    ..\generic\image-win64\openvpn\bin\libcrypto-1_1-x64.dll ^
+    ..\generic\image-win64\openvpn\bin\liblzo2-2.dll ^
+    ..\generic\image-win64\openvpn\bin\libopenvpnmsica.dll ^
+    ..\generic\image-win64\openvpn\bin\libpkcs11-helper-1.dll ^
+    ..\generic\image-win64\openvpn\bin\libssl-1_1-x64.dll ^
+    ..\generic\image-win64\openvpn\bin\openssl.exe ^
+    ..\generic\image-win64\openvpn\bin\openvpn.exe ^
+    ..\generic\image-win64\openvpn\bin\openvpn-gui.exe ^
+    ..\generic\image-win64\openvpn\bin\openvpnserv.exe ^
+    ..\generic\image-win64\openvpn\bin\tapctl.exe

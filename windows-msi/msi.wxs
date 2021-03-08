@@ -85,8 +85,6 @@
 
         <Property Id="TAPWINDOWS6ADAPTERS" Secure="yes"/>
         <Property Id="ACTIVETAPWINDOWS6ADAPTERS" Secure="yes"/>
-        <Property Id="WINTUNADAPTERS" Secure="yes"/>
-        <Property Id="ACTIVEWINTUNADAPTERS" Secure="yes"/>
 
 
         <!--
@@ -789,6 +787,9 @@
                         <Component Id="bin.tapctl.exe" Guid="{5A294591-0F71-470F-977B-DD288AB2B437}">
                             <File Name="tapctl.exe" Source="!(bindpath.openvpn)bin\tapctl.exe" KeyPath="yes"/>
                         </Component>
+                        <Component Id="bin.wintun.dll" Guid="{C9683E45-BE9E-405D-B712-7CF90AADD51C}">
+                            <File Name="wintun.dll" Source="!(bindpath.openvpn)bin\wintun.dll" KeyPath="yes" Checksum="yes"/>
+                        </Component>
                     </Directory>
 
                     <Directory Id="CONFIGDIR" Name="config">
@@ -1308,16 +1309,11 @@
         -->
         <DirectoryRef Id="PRODUCTDIR">
             <Merge Id="TAPWindows6MergeModule" Language="0" DiskId="1" SourceFile="!(bindpath.build)$(var.PRODUCT_PLATFORM)\tap-windows6.msm"/>
-            <?if $(sys.BUILDARCH)~="x86" Or $(sys.BUILDARCH)~="x64" ?>
-                <Merge Id="WintunMergeModule" Language="0" DiskId="1" SourceFile="!(bindpath.build)$(var.PRODUCT_PLATFORM)\wintun.msm"/>
-            <?endif ?>
         </DirectoryRef>
 
         <UI>
             <ProgressText Action="$(var.PRODUCT_TAP_WIN_COMPONENT_ID)_Evaluate">Evaluating TAP-Windows6 driver</ProgressText>
             <ProgressText Action="$(var.PRODUCT_TAP_WIN_COMPONENT_ID)_Process">Processing TAP-Windows6 driver</ProgressText>
-            <ProgressText Action="EvaluateWintun">Evaluating Wintun driver</ProgressText>
-            <ProgressText Action="ProcessWintun">Processing Wintun driver</ProgressText>
         </UI>
 
 
@@ -1325,6 +1321,7 @@
             TUN/TAP adapters
         -->
         <CustomAction Id="EvaluateTUNTAPAdapters"          BinaryKey="libopenvpnmsica.dll" DllEntry="EvaluateTUNTAPAdapters"/>
+        <CustomAction Id="DeleteWintunPool"                BinaryKey="libopenvpnmsica.dll" DllEntry="ProcessDeferredAction" Execute="deferred" Impersonate="no"/>
         <CustomAction Id="UninstallTUNTAPAdapters"         BinaryKey="libopenvpnmsica.dll" DllEntry="ProcessDeferredAction" Execute="deferred" Impersonate="no"/>
         <CustomAction Id="UninstallTUNTAPAdaptersCommit"   BinaryKey="libopenvpnmsica.dll" DllEntry="ProcessDeferredAction" Execute="commit"   Impersonate="no"/>
         <CustomAction Id="UninstallTUNTAPAdaptersRollback" BinaryKey="libopenvpnmsica.dll" DllEntry="ProcessDeferredAction" Execute="rollback" Impersonate="no"/>
@@ -1335,6 +1332,7 @@
 
         <InstallExecuteSequence>
             <Custom Action="EvaluateTUNTAPAdapters"           After="ProcessComponents"/>
+            <Custom Action="DeleteWintunPool"                Before="RemoveFiles"/>
             <Custom Action="UninstallTUNTAPAdapters"          After="DeleteServices"/>
             <Custom Action="UninstallTUNTAPAdaptersCommit"    After="UninstallTUNTAPAdapters"/>
             <Custom Action="UninstallTUNTAPAdaptersRollback" Before="UninstallTUNTAPAdapters"/>
@@ -1347,6 +1345,9 @@
         <UI>
             <ProgressText
                 Action="EvaluateTUNTAPAdapters">Evaluating TUN/TAP adapters</ProgressText>
+            <ProgressText
+                Action="DeleteWintunPool"
+                Template="[1]: [2] [3]">Deleting Wintun adapters and driver</ProgressText>
             <ProgressText
                 Action="UninstallTUNTAPAdapters"
                 Template="[1]: [2] [3]">Deleting TUN/TAP adapters</ProgressText>
@@ -1414,16 +1415,6 @@
                 <Data Column="Condition"  ><![CDATA[NOT TAPWINDOWS6ADAPTERS]]></Data>
                 <Data Column="Component_" >regD8053A2D8D674155AF2620A90720BE55.8D9A59BA_33C1_4CA0_96AF_E7F728DEC8D7</Data>
             </Row>
-
-            <?if $(sys.BUILDARCH)~="x86" Or $(sys.BUILDARCH)~="x64" ?>
-                <Row>
-                    <Data Column="Adapter"    >Wintun</Data>
-                    <Data Column="DisplayName">Wintun|$(var.PRODUCT_NAME) Wintun</Data>
-                    <Data Column="HardwareId" >Wintun</Data>
-                    <Data Column="Condition"  ><![CDATA[NOT WINTUNADAPTERS]]></Data>
-                    <Data Column="Component_" >reg11F81A5FFB49D87B59FD3777E57FF853.C28309D9_1954_4F2D_A7D1_228850092460</Data>
-                </Row>
-            <?endif?>
         </CustomTable>
 
 
@@ -1587,18 +1578,16 @@
                 <MergeRef Id="TAPWindows6MergeModule"/>
             </Feature>
 
-            <?if $(sys.BUILDARCH)~="x86" Or $(sys.BUILDARCH)~="x64" ?>
-                <Feature
-                    Id="Drivers.Wintun"
-                    Title="Wintun"
-                    Description="Layer 3 TUN Driver for Windows"
-                    Level="1"
-                    ConfigurableDirectory="PRODUCTDIR"
-                    AllowAdvertise="no">
-                    <ComponentRef Id="shortcut.bin.tapctl.exe.create.Wintun"/>
-                    <MergeRef Id="WintunMergeModule"/>
-                </Feature>
-            <?endif?>
+            <Feature
+                Id="Drivers.Wintun"
+                Title="Wintun"
+                Description="Layer 3 TUN Driver for Windows"
+                Level="1"
+                ConfigurableDirectory="PRODUCTDIR"
+                AllowAdvertise="no">
+                <ComponentRef Id="bin.wintun.dll"/>
+                <ComponentRef Id="shortcut.bin.tapctl.exe.create.Wintun"/>
+            </Feature>
         </Feature>
 
         <Feature
